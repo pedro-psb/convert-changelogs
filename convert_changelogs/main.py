@@ -16,6 +16,7 @@ def main():
     args = parser.parse_args()
     result = markdown_changelog_migration(args.plugin_name)
     print(result)
+    return 0
 
 
 def markdown_changelog_migration(plugin_name: str):
@@ -79,11 +80,9 @@ def convert_changelog(changes_rst: Path, plugin_name: str) -> Path:
 
     # convert
     changes_md = changes_rst.parent / "CHANGES.md"
-    changes_md_fn = str(changes_md.absolute())
-    changes_rst_fn = str(changes_rst.absolute())
     pypandoc.convert_file(
-        source_file=changes_rst_fn,
-        outputfile=changes_md_fn,
+        source_file=str(changes_rst.absolute()),
+        outputfile=str(changes_md.absolute()),
         to="markdown",
         extra_args=["--wrap=preserve"],
     )
@@ -95,7 +94,7 @@ def convert_changelog(changes_rst: Path, plugin_name: str) -> Path:
     return changes_md
 
 
-def pre_process(data) -> str:
+def pre_process(document: str) -> str:
     replaces = [
         (
             "Convert :github: directive",
@@ -128,13 +127,12 @@ def pre_process(data) -> str:
             r"`\1`",
         ),
     ]
-    f_new = data
     for _, pattern, repl in replaces:
-        f_new = re.sub(pattern, repl, f_new)
-    return f_new
+        document = re.sub(pattern, repl, document)
+    return document
 
 
-def post_process(data, plugin_name: str) -> str:
+def post_process(document: str, plugin_name: str) -> str:
     replaces = [
         (
             "Remove # Changelog to include header later",
@@ -167,9 +165,8 @@ def post_process(data, plugin_name: str) -> str:
             r"",
         ),
     ]
-    f_new = data
     for _, pattern, repl in replaces:
-        f_new = re.sub(pattern, repl, f_new)
+        document = re.sub(pattern, repl, document)
 
     header = dedent(
         """\
@@ -186,9 +183,9 @@ def post_process(data, plugin_name: str) -> str:
 
         """
     )
-    f_new = header + f_new
-    return f_new
+    document = header + document
+    return document
 
 
 if __name__ == "__main__":
-    main()
+    exit(main())

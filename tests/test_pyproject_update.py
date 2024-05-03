@@ -1,8 +1,4 @@
-import os
 from pathlib import Path
-
-import pytest
-import tomlkit
 
 from convert_changelogs.main import update_pyproject_toml
 
@@ -80,6 +76,7 @@ exclude = '''
 
 
 def tests_pyproject_update(tmp_path):
+    """Should update the pyproject and preserve unrelated content already there"""
     pyproject_file = Path(tmp_path / "pyproject.toml")
     pyproject_file.write_text(pyproject_sample)
     update_pyproject_toml(pyproject_file)
